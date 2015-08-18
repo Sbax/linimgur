@@ -92,7 +92,7 @@ function setWallpaperLinux(){
 		echo "Gnome-settings-daemons detected, setting wallpaper with gsettings..."
 		gsettings set org.gnome.desktop.background picture-uri file://$muzeiDir/Wallpaper/$imageFile
 	else
-		echo "Currently supporting only gnome"
+		echo "Currently supporting only gnome, Wallpaper placed in ~/Pictures/imgur/Wallpaper"
 	fi
 }
 
