@@ -22,9 +22,7 @@ You can also set it as a cronjob or as an anacronjob if you want to.
 ## How to
 
 You can launch it with a specific subreddit or use the default, [earthporn](https://imgur.com/r/EarthPorn/), launch it again to get a new image.
-
 If the script can't set the wallpaper you can still find the image downloaded to ~/Pictures/imgur/Wallpapers.
 
 ###### Mac OSX
-
 Remember to uncheck the 'Change picture' option in each display background window in which you want to set a linimgur wallpaper.
