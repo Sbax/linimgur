@@ -29,7 +29,8 @@ nowDate=$(date +%Y%m%d)
 if [ -z "$1" ]
 then
 	sub="earthporn"
-	echo "Using default subreddit earthporn, you can specify your preferred subreddit when launching the command"
+	echo "Using default subreddit earthporn, you can specify your"
+	echo "preferred subreddit when launching the command"
 else
 	sub=$1
 fi
@@ -51,8 +52,8 @@ else
 fi
 
 echo "$(date +%Y%m%d)" >> .infos
-
-imgurl="http://imgur.com/r/"$sub"/hot/day.json"
+timestamp=$(date +%s)
+imgurl="http://imgur.com/r/"$sub"/top/day.json?time="$timestamp
 
 curl -s -o imgur.json $imgurl
 i=$(( i + 1 ))
@@ -73,7 +74,7 @@ then
 	exit
 fi
 
-echo $title
+echo $i" "$title
 
 cd Wallpaper
 if [ "$(ls)" ]
@@ -83,7 +84,7 @@ fi
 
 if [ ! -f $imageFile ]
 then
-	curl -s -o $imageFile $imageUri
+	curl -# -o $imageFile $imageUri
 fi
 
 function setWallpaperLinux(){
