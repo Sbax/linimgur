@@ -68,7 +68,6 @@ timestamp=$(date +%s%N)
 
 #url is being cached, appending a unique string should solve the problem
 imgurl="http://imgur.com/r/"$sub"/hot/day.json?awesomevar="$timestamp
-echo $imgurl
 
 curl -s -o imgur.json $imgurl
 echo $i >> .infos
