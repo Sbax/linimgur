@@ -32,7 +32,14 @@ then
 	echo "Using default subreddit earthporn, you can specify your"
 	echo "preferred subreddit when launching the command"
 else
-	sub=$1
+	if [ $1 == "-k" ];
+	then
+		keep=true
+		sub=$2
+	else
+		keep=false
+		sub=$1
+	fi
 fi
 
 
@@ -43,21 +50,29 @@ else
 	if [ "${gotDate}" == "${nowDate}" ] 
 	then
 		i=$(sed -n '2p' < .infos) 
+		i=$(( i + 1 ))
+		lastSub=$(sed -n '3p' < .infos) 
 		if [ $i -gt 10 ]
+		then
+			i=0
+		fi
+		if [ "${lastSub}" != "${sub}" ]
 		then
 			i=0
 		fi
 	fi
 	rm -f .infos
 fi
-
 echo "$(date +%Y%m%d)" >> .infos
-timestamp=$(date +%s)
-imgurl="http://imgur.com/r/"$sub"/top/day.json?time="$timestamp
+timestamp=$(date +%s%N)
+
+#url is being cached, appending a unique string should solve the problem
+imgurl="http://imgur.com/r/"$sub"/hot/day.json?awesomevar="$timestamp
+echo $imgurl
 
 curl -s -o imgur.json $imgurl
-i=$(( i + 1 ))
 echo $i >> .infos
+echo $sub >> .infos
 
 hashName=`jq '.data['$i'].hash' imgur.json | sed s/\"//g`
 ext=`jq '.data['$i'].ext' imgur.json | sed s/\"//g`
@@ -77,9 +92,12 @@ fi
 echo $i" "$title
 
 cd Wallpaper
-if [ "$(ls)" ]
+if [ "$keep"  == false ]
 then
-	rm *
+	if [ "$(ls)" ]
+	then
+		rm *
+	fi
 fi
 
 if [ ! -f $imageFile ]
