@@ -26,22 +26,32 @@ cd $imgurDir
 gotDate=$(head -n 1 .infos)
 nowDate=$(date +%Y%m%d)
 
+sub="earthporn"
+repeat=1
+
 if [ -z "$1" ]
 then
-	sub="earthporn"
 	echo "Using default subreddit earthporn, you can specify your"
 	echo "preferred subreddit when launching the command"
 else
 	if [ $1 == "-k" ];
 	then
 		keep=true
-		sub=$2
+		re='^[0-9]+$'
+		if ! [[ $2 =~ $re ]] ; then
+			sub=$2
+			if [ ! -f "$3" ]
+			then
+				repeat=$3
+			fi
+		else
+			repeat=$2
+		fi
 	else
 		keep=false
 		sub=$1
 	fi
 fi
-
 
 if [ ! -f ".infos" ]
 then
@@ -60,6 +70,8 @@ else
 		then
 			i=0
 		fi
+	else
+		i=0
 	fi
 	rm -f .infos
 fi
@@ -70,39 +82,49 @@ timestamp=$(date +%s%N)
 imgurl="http://imgur.com/r/"$sub"/hot/day.json?awesomevar="$timestamp
 
 curl -s -o imgur.json $imgurl
-echo $i >> .infos
-echo $sub >> .infos
 
-hashName=`jq '.data['$i'].hash' imgur.json | sed s/\"//g`
-ext=`jq '.data['$i'].ext' imgur.json | sed s/\"//g`
-nicename=`jq '.data['$i'].permalink' imgur.json | sed s/\"//g`
-nicename=$(basename "$nicename")
+while [ $repeat -gt 0 ]
+do
+	repeat=$(( repeat - 1 ))
 
-title=`jq '.data['$i'].title' imgur.json | sed s/\"//g`
-imageUri="i.imgur.com/"$hashName$ext
-imageFile=$nicename$ext
+	hashName=`jq '.data['$i'].hash' imgur.json | sed s/\"//g`
+	ext=`jq '.data['$i'].ext' imgur.json | sed s/\"//g`
+	nicename=`jq '.data['$i'].permalink' imgur.json | sed s/\"//g`
+	nicename=$(basename "$nicename")
 
-if [ "$title" == "null" ]
-then
-	echo "No image found"
-	exit
-fi
+	title=`jq '.data['$i'].title' imgur.json | sed s/\"//g`
+	imageUri="i.imgur.com/"$hashName$ext
+	imageFile=$nicename$ext
 
-echo $i" "$title
-
-cd Wallpaper
-if [ "$keep"  == false ]
-then
-	if [ "$(ls)" ]
+	if [ "$title" == "null" ]
 	then
-		rm *
+		echo "No image found"
+		exit
 	fi
-fi
 
-if [ ! -f $imageFile ]
-then
-	curl -# -o $imageFile $imageUri
-fi
+	echo $i" "$title
+
+	cd Wallpaper
+	if [ "$keep"  == false ]
+	then
+		if [ "$(ls)" ]
+		then
+			rm *
+		fi
+	fi
+
+	if [ ! -f $imageFile ]
+	then
+		curl -# -o $imageFile $imageUri
+	fi
+
+	if [ $repeat != 0 ]
+	then
+		i=$(( i + 1 ))
+	fi
+
+	cd ..
+done
 
 function setWallpaperLinux(){
 	if [ "$(pidof gnome-settings-daemon)" ]
@@ -130,9 +152,12 @@ EOD
 }
 
 case "$OSTYPE" in
-  linux* | *BSD*) setWallpaperLinux ;;
-  darwin*)        setWallpaperOSX ;;
+	linux* | *BSD*) setWallpaperLinux ;;
+	darwin*)        setWallpaperOSX ;;
+	*)				echo "Not able to set wallpaper under your OS, Wallpaper placed in ~/Pictures/imgur/Wallpaper"
 esac
 
-cd ..
+echo $i >> .infos
+echo $sub >> .infos
+
 rm -f imgur.json
